@@ -1,9 +1,11 @@
+/* global L */ // deklarasi agar ESLint tidak menganggap L undefined
+
 const API_KEY = 'at_K2nCYt3H1gnguPjFbUeD5Zx7SzRDt';
 
-// Custom Marker Icon
+// Custom Marker Icon dengan aksesibilitas
 const customIcon = L.divIcon({
   className: 'custom-leaflet-marker',
-  html: `<div class="custom-pulse-marker"></div>`,
+  html: `<div class="custom-pulse-marker" role="img" aria-label="Lokasi IP yang dilacak"></div>`,
   iconSize: [20, 20],
   iconAnchor: [10, 10]
 });
@@ -18,7 +20,9 @@ let map = null;
 let marker = null;
 let currentTileLayer = null;
 
-// Inisialisasi Peta
+// ============================================================
+// INISIALISASI PETA
+// ============================================================
 function initMap(lat, lng) {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
   
@@ -31,13 +35,24 @@ function initMap(lat, lng) {
 
   marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
 
-  // Panggil invalidateSize setelah peta benar-benar ditampilkan
+  // === PERBAIKAN: Tambahkan ARIA pada marker ===
+  marker.on('add', function() {
+    const el = this.getElement();
+    if (el) {
+      el.setAttribute('aria-label', 'Lokasi IP yang dilacak');
+      el.setAttribute('role', 'img');
+    }
+  });
+
+  // === PERBAIKAN: InvalidateSize setelah peta tampil ===
   setTimeout(() => {
     if (map) map.invalidateSize();
   }, 300);
 }
 
-// Switch Map Tile saat Dark/Light Mode
+// ============================================================
+// SWITCH MAP TILE (Dark/Light)
+// ============================================================
 function switchMapTile(theme) {
   if (!map || !currentTileLayer) return; // cegah error jika map belum siap
   map.removeLayer(currentTileLayer);
@@ -47,7 +62,9 @@ function switchMapTile(theme) {
   }).addTo(map);
 }
 
-// Update Lokasi Peta & Marker
+// ============================================================
+// UPDATE PETA
+// ============================================================
 function updateMap(lat, lng) {
   // Validasi koordinat
   if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
@@ -64,14 +81,17 @@ function updateMap(lat, lng) {
   }
 }
 
-// Validasi Domain (diperbaiki untuk mendukung subdomain dan TLD panjang)
+// ============================================================
+// VALIDASI DOMAIN (Regex diperbaiki untuk subdomain)
+// ============================================================
 function isDomain(str) {
-  // Mendukung domain seperti sub.domain.co.id
   const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
   return domainRegex.test(str);
 }
 
-// Fetch API
+// ============================================================
+// FETCH API IPIFY
+// ============================================================
 async function fetchIpDetails(query = '') {
   let url = `https://geo.ipify.org/api/v2/country,city?apiKey=${API_KEY}`;
   
@@ -92,7 +112,7 @@ async function fetchIpDetails(query = '') {
     
     const data = await response.json();
 
-    // Update tampilan (pastikan elemen ada)
+    // === PERBAIKAN: Pengecekan elemen DOM sebelum update ===
     const ipDisplay = document.getElementById('ip-display');
     const locationDisplay = document.getElementById('location-display');
     const timezoneDisplay = document.getElementById('timezone-display');
@@ -112,7 +132,7 @@ async function fetchIpDetails(query = '') {
     }
     if (ispDisplay) ispDisplay.innerText = data.isp || '-';
 
-    // Update peta jika koordinat tersedia
+    // Update peta jika koordinat valid
     if (data.location && typeof data.location.lat === 'number' && typeof data.location.lng === 'number') {
       updateMap(data.location.lat, data.location.lng);
     } else {
@@ -124,9 +144,11 @@ async function fetchIpDetails(query = '') {
   }
 }
 
-// DOM Event Listener
+// ============================================================
+// DOM EVENT LISTENER
+// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Toggle Theme Logic
+  // 1. Toggle Theme
   const themeToggleBtn = document.getElementById('theme-toggle');
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
@@ -138,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Search Form Logic
+  // 2. Search Form
   const searchForm = document.getElementById('search-form');
   if (searchForm) {
     searchForm.addEventListener('submit', (e) => {
