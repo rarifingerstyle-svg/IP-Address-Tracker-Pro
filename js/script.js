@@ -1,183 +1,302 @@
-/* global L */ // deklarasi agar ESLint tidak menganggap L undefined
+/**
+ * IP Address Tracker
+ * Refactored: Semantic, Accessible, Responsive, Best Practice
+ */
 
-const API_KEY = 'at_K2nCYt3H1gnguPjFbUeD5Zx7SzRDt';
-
-// Custom Marker Icon dengan aksesibilitas
-const customIcon = L.divIcon({
-  className: 'custom-leaflet-marker',
-  html: `<div class="custom-pulse-marker" role="img" aria-label="Lokasi IP yang dilacak"></div>`,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10]
-});
-
-// Map Tile Providers
-const tiles = {
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  light: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+// ============================================
+// CONFIGURATION
+// ============================================
+const CONFIG = {
+  API_KEY: 'at_K2nCYt3H1gnguPjFbUeD5Zx7SzRDt',
+  DEFAULT_ZOOM: 13,
+  TILE_URL: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  TILE_ATTRIBUTION: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 };
 
-let map = null;
-let marker = null;
-let currentTileLayer = null;
+// ============================================
+// STATE
+// ============================================
+const state = {
+  map: null,
+  marker: null,
+  tileLayer: null,
+  isLoading: false
+};
 
-// ============================================================
-// INISIALISASI PETA
-// ============================================================
-function initMap(lat, lng) {
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+// ============================================
+// DOM ELEMENTS
+// ============================================
+const elements = {
+  form: document.getElementById('search-form'),
+  input: document.getElementById('ip-input'),
+  error: document.getElementById('search-error'),
+  ip: document.getElementById('ip-display'),
+  location: document.getElementById('location-display'),
+  timezone: document.getElementById('timezone-display'),
+  isp: document.getElementById('isp-display'),
+  toast: document.getElementById('toast')
+};
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+/**
+ * Validate IPv4 address
+ */
+function isValidIPv4(ip) {
+  const regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][1-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][1-9]?)$/;
+  return regex.test(ip.trim());
+}
+
+/**
+ * Validate domain name
+ */
+function isValidDomain(domain) {
+  const regex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+  return regex.test(domain.trim().toLowerCase());
+}
+
+/**
+ * Show toast notification (non-intrusive)
+ */
+function showToast(message, duration = 3000) {
+  const { toast } = elements;
+  if (!toast) return;
   
-  map = L.map('map', { zoomControl: false }).setView([lat, lng], 13);
+  toast.textContent = message;
+  toast.classList.add('show');
   
-  currentTileLayer = L.tileLayer(tiles[currentTheme], {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap | © CARTO'
-  }).addTo(map);
-
-  marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-
-  // === PERBAIKAN: Tambahkan ARIA pada marker ===
-  marker.on('add', function() {
-    const el = this.getElement();
-    if (el) {
-      el.setAttribute('aria-label', 'Lokasi IP yang dilacak');
-      el.setAttribute('role', 'img');
-    }
-  });
-
-  // === PERBAIKAN: InvalidateSize setelah peta tampil ===
   setTimeout(() => {
-    if (map) map.invalidateSize();
-  }, 300);
+    toast.classList.remove('show');
+  }, duration);
 }
 
-// ============================================================
-// SWITCH MAP TILE (Dark/Light)
-// ============================================================
-function switchMapTile(theme) {
-  if (!map || !currentTileLayer) return; // cegah error jika map belum siap
-  map.removeLayer(currentTileLayer);
-  currentTileLayer = L.tileLayer(tiles[theme], {
+/**
+ * Show inline error
+ */
+function showError(message) {
+  const { error } = elements;
+  if (error) {
+    error.textContent = message;
+    // Clear after 4 seconds
+    setTimeout(() => {
+      error.textContent = '';
+    }, 4000);
+  }
+}
+
+/**
+ * Set loading state
+ */
+function setLoading(loading) {
+  state.isLoading = loading;
+  const skeletonHTML = '<span class="skeleton" aria-hidden="true"></span>';
+  
+  if (loading) {
+    [elements.ip, elements.location, elements.timezone, elements.isp].forEach(el => {
+      if (el) el.innerHTML = skeletonHTML;
+    });
+  }
+}
+
+// ============================================
+// MAP FUNCTIONS
+// ============================================
+
+/**
+ * Initialize Leaflet map
+ */
+function initMap(lat, lng) {
+  if (state.map) return;
+  
+  state.map = L.map('map', {
+    zoomControl: false,
+    attributionControl: true
+  }).setView([lat, lng], CONFIG.DEFAULT_ZOOM);
+  
+  // Add zoom control to bottom right
+  L.control.zoom({ position: 'bottomright' }).addTo(state.map);
+  
+  // Add tile layer
+  state.tileLayer = L.tileLayer(CONFIG.TILE_URL, {
     maxZoom: 19,
-    attribution: '© OpenStreetMap | © CARTO'
-  }).addTo(map);
+    attribution: CONFIG.TILE_ATTRIBUTION
+  }).addTo(state.map);
+  
+  // Add custom marker
+  const customIcon = L.divIcon({
+    className: 'custom-marker',
+    iconSize: [46, 56],
+    iconAnchor: [23, 56],
+    popupAnchor: [0, -56]
+  });
+  
+  state.marker = L.marker([lat, lng], { icon: customIcon }).addTo(state.map);
+  
+  // Fix rendering after layout
+  requestAnimationFrame(() => {
+    setTimeout(() => state.map.invalidateSize(), 300);
+  });
 }
 
-// ============================================================
-// UPDATE PETA
-// ============================================================
+/**
+ * Update map position
+ */
 function updateMap(lat, lng) {
-  // Validasi koordinat
-  if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
-    console.warn('Koordinat tidak valid:', lat, lng);
+  if (!state.map) {
+    initMap(lat, lng);
     return;
   }
-
-  if (!map) {
-    initMap(lat, lng);
-  } else {
-    map.setView([lat, lng], 13);
-    if (marker) marker.setLatLng([lat, lng]);
-    map.invalidateSize();
+  
+  if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+    console.warn('Invalid coordinates:', lat, lng);
+    return;
   }
+  
+  state.map.setView([lat, lng], CONFIG.DEFAULT_ZOOM, {
+    animate: true,
+    duration: 1
+  });
+  
+  if (state.marker) {
+    state.marker.setLatLng([lat, lng]);
+  }
+  
+  state.map.invalidateSize();
 }
 
-// ============================================================
-// VALIDASI DOMAIN (Regex diperbaiki untuk subdomain)
-// ============================================================
-function isDomain(str) {
-  const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
-  return domainRegex.test(str);
-}
+// ============================================
+// API FUNCTIONS
+// ============================================
 
-// ============================================================
-// FETCH API IPIFY
-// ============================================================
+/**
+ * Fetch IP geolocation data
+ */
 async function fetchIpDetails(query = '') {
-  let url = `https://geo.ipify.org/api/v2/country,city?apiKey=${API_KEY}`;
+  if (state.isLoading) return;
+  
+  setLoading(true);
+  elements.error.textContent = ''; // Clear previous errors
+  
+  let url = `https://geo.ipify.org/api/v2/country,city?apiKey=${CONFIG.API_KEY}`;
   
   if (query) {
-    if (isDomain(query)) {
-      url += `&domain=${encodeURIComponent(query)}`;
+    const cleanQuery = query.trim();
+    if (isValidDomain(cleanQuery)) {
+      url += `&domain=${encodeURIComponent(cleanQuery)}`;
+    } else if (isValidIPv4(cleanQuery)) {
+      url += `&ipAddress=${encodeURIComponent(cleanQuery)}`;
     } else {
-      url += `&ipAddress=${encodeURIComponent(query)}`;
+      setLoading(false);
+      showError('Please enter a valid IP address or domain.');
+      return;
     }
   }
-
+  
   try {
     const response = await fetch(url);
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.messages?.[0] || 'IP atau Domain tidak ditemukan.');
+      throw new Error(errorData.messages?.[0] || 'IP or domain not found.');
     }
     
     const data = await response.json();
-
-    // === PERBAIKAN: Pengecekan elemen DOM sebelum update ===
-    const ipDisplay = document.getElementById('ip-display');
-    const locationDisplay = document.getElementById('location-display');
-    const timezoneDisplay = document.getElementById('timezone-display');
-    const ispDisplay = document.getElementById('isp-display');
-
-    if (ipDisplay) ipDisplay.innerText = data.ip || '-';
-    if (locationDisplay) {
-      const locationParts = [
-        data.location?.city,
-        data.location?.region,
-        data.location?.postalCode
-      ].filter(Boolean);
-      locationDisplay.innerText = locationParts.length ? locationParts.join(', ') : '-';
-    }
-    if (timezoneDisplay) {
-      timezoneDisplay.innerText = data.location?.timezone ? `UTC ${data.location.timezone}` : '-';
-    }
-    if (ispDisplay) ispDisplay.innerText = data.isp || '-';
-
-    // Update peta jika koordinat valid
-    if (data.location && typeof data.location.lat === 'number' && typeof data.location.lng === 'number') {
-      updateMap(data.location.lat, data.location.lng);
-    } else {
-      console.warn('Koordinat tidak tersedia dari API.');
-    }
-
+    renderData(data);
+    
   } catch (error) {
-    alert(error.message || 'Terjadi kesalahan saat mengambil data.');
+    console.error('API Error:', error);
+    showError(error.message || 'Something went wrong. Please try again.');
+    showToast('Failed to fetch data', 4000);
+  } finally {
+    setLoading(false);
   }
 }
 
-// ============================================================
-// DOM EVENT LISTENER
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Toggle Theme
-  const themeToggleBtn = document.getElementById('theme-toggle');
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      
-      document.documentElement.setAttribute('data-theme', newTheme);
-      switchMapTile(newTheme);
-    });
+/**
+ * Render data to DOM
+ */
+function renderData(data) {
+  // IP Address
+  if (elements.ip) {
+    elements.ip.textContent = data.ip || '-';
   }
+  
+  // Location: City, Region, PostalCode
+  if (elements.location) {
+    const parts = [data.location?.city, data.location?.region, data.location?.postalCode]
+      .filter(Boolean);
+    elements.location.textContent = parts.length ? parts.join(', ') : '-';
+  }
+  
+  // Timezone
+  if (elements.timezone) {
+    elements.timezone.textContent = data.location?.timezone 
+      ? `UTC ${data.location.timezone}` 
+      : '-';
+  }
+  
+  // ISP
+  if (elements.isp) {
+    elements.isp.textContent = data.isp || '-';
+  }
+  
+  // Update map
+  if (data.location?.lat != null && data.location?.lng != null) {
+    updateMap(data.location.lat, data.location.lng);
+  }
+}
 
-  // 2. Search Form
-  const searchForm = document.getElementById('search-form');
-  if (searchForm) {
-    searchForm.addEventListener('submit', (e) => {
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+function initEventListeners() {
+  // Form submit
+  if (elements.form) {
+    elements.form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const input = document.getElementById('ip-input');
-      const query = input ? input.value.trim() : '';
-      if (query) fetchIpDetails(query);
+      const query = elements.input?.value.trim();
+      
+      if (!query) {
+        showError('Please enter an IP address or domain.');
+        return;
+      }
+      
+      fetchIpDetails(query);
     });
   }
-
-  // 3. Load IP Awal
-  fetchIpDetails();
-
-  // 4. Pastikan peta di-refresh setelah semua layout selesai
-  window.addEventListener('load', () => {
-    if (map) {
-      setTimeout(() => map.invalidateSize(), 300);
+  
+  // Window resize (debounced)
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (state.map) state.map.invalidateSize();
+    }, 250);
+  });
+  
+  // Visibility change (fix map when tab becomes active)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.map) {
+      setTimeout(() => state.map.invalidateSize(), 100);
     }
   });
-});
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+function init() {
+  initEventListeners();
+  fetchIpDetails(); // Load user's IP on startup
+}
+
+// Start when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
