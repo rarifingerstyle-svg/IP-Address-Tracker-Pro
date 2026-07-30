@@ -11,11 +11,11 @@
   --footer-bg: #0a0b10;
   --footer-border: rgba(255, 255, 255, 0.05);
 
-  /* === PERBAIKAN: Custom properties untuk unit relatif === */
-  --max-width-container: 69.375rem; /* 1110px → rem */
+  /* === Unit relatif (rem) === */
+  --max-width-container: 69.375rem; /* 1110px */
   --padding-header: 2rem 1.5rem 7rem;
   --margin-top-bar: 1.5rem;
-  --border-radius-card: 1.5rem; /* 24px → rem */
+  --border-radius-card: 1.5rem; /* 24px */
   --transition-default: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   --font-size-title: 1.5rem;
   --font-size-badge: 0.65rem;
@@ -24,7 +24,7 @@
   --padding-search: 1rem 1.25rem;
   --padding-info-card: 1.75rem 2rem;
   --gap-info-item: 1.5rem;
-  --marker-size: 1.25rem; /* 20px → rem */
+  --marker-size: 1.25rem; /* 20px */
 }
 
 [data-theme="light"] {
@@ -84,7 +84,7 @@ body {
 .title {
   font-size: var(--font-size-title);
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 0.125rem; /* 2px → rem */
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -92,7 +92,7 @@ body {
 
 .badge {
   font-size: var(--font-size-badge);
-  padding: 2px 8px;
+  padding: 0.125rem 0.5rem; /* 2px 8px → rem */
   background: var(--accent-color);
   color: #000;
   border-radius: 20px;
@@ -178,11 +178,11 @@ body {
 }
 
 .info-item:first-child {
-  padding-inline-start: 0; /* logical property */
+  padding-inline-start: 0;
 }
 
 .info-item:last-child {
-  border-inline-end: none; /* logical property */
+  border-inline-end: none;
 }
 
 .info-label {
@@ -190,8 +190,8 @@ body {
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-block-end: 0.4rem; /* logical property */
+  letter-spacing: 0.125rem; /* 2px → rem */
+  margin-block-end: 0.4rem;
 }
 
 .info-value {
@@ -199,8 +199,8 @@ body {
   font-weight: 700;
   color: var(--text-secondary);
   line-height: 1.2;
-  overflow-wrap: break-word; /* pengganti word-break: break-word yang deprecated */
-  word-break: break-word; /* fallback untuk browser lawas */
+  overflow-wrap: break-word; /* pengganti word-break: break-word */
+  word-break: normal; /* fallback untuk browser lawas */
 }
 
 /* ============================================================
@@ -217,7 +217,7 @@ body {
 #map {
   width: 100%;
   height: 100%;
-  min-height: 28.125rem; /* 450px → rem */
+  min-height: 28.125rem;
 }
 
 /* ============================================================
@@ -261,7 +261,6 @@ body {
   z-index: 10;
 }
 
-/* === PERBAIKAN: Link bisa dibedakan tanpa warna === */
 .attribution a {
   color: var(--accent-color);
   text-decoration: underline;
@@ -271,26 +270,22 @@ body {
 }
 
 /* ============================================================
-   PREFERS-REDUCED-MOTION
+   PREFERS-REDUCED-MOTION (tanpa !important)
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  * {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
-
   .custom-pulse-marker {
-    animation: none !important;
+    animation: none;
   }
 }
 
 /* ============================================================
-   RESPONSIVE: Mobile-First Approach (min-width sudah default)
+   RESPONSIVE: Mobile-First
    ============================================================ */
-/* Tablet & Mobile: 768px → 48em */
 @media (max-width: 48em) {
   .header-hero {
     padding-bottom: 12rem;
