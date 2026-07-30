@@ -10,6 +10,21 @@
   --accent-glow: rgba(0, 242, 254, 0.35);
   --footer-bg: #0a0b10;
   --footer-border: rgba(255, 255, 255, 0.05);
+
+  /* === PERBAIKAN: Custom properties untuk unit relatif === */
+  --max-width-container: 69.375rem; /* 1110px → rem */
+  --padding-header: 2rem 1.5rem 7rem;
+  --margin-top-bar: 1.5rem;
+  --border-radius-card: 1.5rem; /* 24px → rem */
+  --transition-default: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  --font-size-title: 1.5rem;
+  --font-size-badge: 0.65rem;
+  --font-size-label: 0.65rem;
+  --font-size-value: 1.3rem;
+  --padding-search: 1rem 1.25rem;
+  --padding-info-card: 1.75rem 2rem;
+  --gap-info-item: 1.5rem;
+  --marker-size: 1.25rem; /* 20px → rem */
 }
 
 [data-theme="light"] {
@@ -26,12 +41,14 @@
   --footer-border: #e2e8f0;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: 'Space Grotesk', 'Rubik', sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: var(--transition-default);
 }
 
 body {
@@ -42,10 +59,12 @@ body {
   color: var(--text-primary);
 }
 
-/* Header Section */
+/* ============================================================
+   HEADER
+   ============================================================ */
 .header-hero {
   background: var(--bg-gradient);
-  padding: 2rem 1.5rem 7rem;
+  padding: var(--padding-header);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -58,12 +77,12 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 1110px;
-  margin-bottom: 1.5rem;
+  max-width: var(--max-width-container);
+  margin-block-end: var(--margin-top-bar); /* logical property */
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: var(--font-size-title);
   font-weight: 700;
   letter-spacing: 2px;
   display: flex;
@@ -72,7 +91,7 @@ body {
 }
 
 .badge {
-  font-size: 0.65rem;
+  font-size: var(--font-size-badge);
   padding: 2px 8px;
   background: var(--accent-color);
   color: #000;
@@ -93,16 +112,18 @@ body {
   font-size: 1rem;
 }
 
-/* Search Box */
+/* ============================================================
+   SEARCH
+   ============================================================ */
 .search-container {
   display: flex;
   width: 100%;
-  max-width: 550px;
+  max-width: var(--max-width-container);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-radius: 16px;
+  border-radius: 1rem; /* 16px → rem */
   overflow: hidden;
   box-shadow: var(--glass-shadow);
 }
@@ -111,7 +132,7 @@ body {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 1rem 1.25rem;
+  padding: var(--padding-search);
   font-size: 1rem;
   outline: none;
   color: var(--text-primary);
@@ -132,7 +153,9 @@ body {
   color: #000;
 }
 
-/* Info Card Glassmorphism Overlay */
+/* ============================================================
+   INFO CARD (Glassmorphism)
+   ============================================================ */
 .info-card {
   position: absolute;
   bottom: -4rem;
@@ -140,77 +163,93 @@ body {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
+  border-radius: var(--border-radius-card);
   width: calc(100% - 3rem);
-  max-width: 1110px;
-  padding: 1.75rem 2rem;
+  max-width: var(--max-width-container);
+  padding: var(--padding-info-card);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   box-shadow: var(--glass-shadow);
 }
 
 .info-item {
-  padding: 0 1.5rem;
-  border-right: 1px solid var(--glass-border);
+  padding: 0 var(--gap-info-item);
+  border-inline-end: 1px solid var(--glass-border); /* logical property */
 }
 
 .info-item:first-child {
-  padding-left: 0;
+  padding-inline-start: 0; /* logical property */
 }
 
 .info-item:last-child {
-  border-right: none;
+  border-inline-end: none; /* logical property */
 }
 
 .info-label {
-  font-size: 0.65rem;
+  font-size: var(--font-size-label);
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 2px;
-  margin-bottom: 0.4rem;
+  margin-block-end: 0.4rem; /* logical property */
 }
 
 .info-value {
-  font-size: 1.3rem;
+  font-size: var(--font-size-value);
   font-weight: 700;
   color: var(--text-secondary);
   line-height: 1.2;
-  word-break: break-word;
+  overflow-wrap: break-word; /* pengganti word-break: break-word yang deprecated */
+  word-break: break-word; /* fallback untuk browser lawas */
 }
 
-/* Map Styling Fix */
+/* ============================================================
+   MAP
+   ============================================================ */
 .map-wrapper {
   flex: 1;
   width: 100%;
   position: relative;
   z-index: 1;
-  min-height: 450px;
+  min-height: 28.125rem; /* 450px → rem */
 }
 
 #map {
   width: 100%;
   height: 100%;
-  min-height: 450px;
+  min-height: 28.125rem; /* 450px → rem */
 }
 
-/* Marker Pulse Animation */
+/* ============================================================
+   MARKER PULSE ANIMATION
+   ============================================================ */
 @keyframes markerPulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(0, 242, 254, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 12px rgba(0, 242, 254, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+  }
 }
 
 .custom-pulse-marker {
-  width: 20px;
-  height: 20px;
+  width: var(--marker-size);
+  height: var(--marker-size);
   background: var(--accent-color);
   border: 3px solid #ffffff;
   border-radius: 50%;
   animation: markerPulse 1.8s infinite;
 }
 
-/* Footer Style */
+/* ============================================================
+   FOOTER
+   ============================================================ */
 .attribution {
   text-align: center;
   padding: 1rem 0;
@@ -222,13 +261,37 @@ body {
   z-index: 10;
 }
 
+/* === PERBAIKAN: Link bisa dibedakan tanpa warna === */
 .attribution a {
   color: var(--accent-color);
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  font-weight: 500;
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
+/* ============================================================
+   PREFERS-REDUCED-MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .custom-pulse-marker {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE: Mobile-First Approach (min-width sudah default)
+   ============================================================ */
+/* Tablet & Mobile: 768px → 48em */
+@media (max-width: 48em) {
   .header-hero {
     padding-bottom: 12rem;
   }
@@ -243,14 +306,14 @@ body {
 
   .info-item {
     padding: 0;
-    border-right: none;
+    border-inline-end: none;
     border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 0.6rem;
+    padding-block-end: 0.6rem;
   }
 
   .info-item:last-child {
     border-bottom: none;
-    padding-bottom: 0;
+    padding-block-end: 0;
   }
 
   .info-value {
