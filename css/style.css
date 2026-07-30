@@ -11,11 +11,11 @@
   --footer-bg: #0a0b10;
   --footer-border: rgba(255, 255, 255, 0.05);
 
-  /* === Unit relatif (rem) === */
-  --max-width-container: 69.375rem; /* 1110px */
+  /* Unit relatif (rem) */
+  --max-width-container: 69.375rem;       /* 1110px */
   --padding-header: 2rem 1.5rem 7rem;
   --margin-top-bar: 1.5rem;
-  --border-radius-card: 1.5rem; /* 24px */
+  --border-radius-card: 1.5rem;           /* 24px */
   --transition-default: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   --font-size-title: 1.5rem;
   --font-size-badge: 0.65rem;
@@ -24,7 +24,7 @@
   --padding-search: 1rem 1.25rem;
   --padding-info-card: 1.75rem 2rem;
   --gap-info-item: 1.5rem;
-  --marker-size: 1.25rem; /* 20px */
+  --marker-size: 1.25rem;                /* 20px */
 }
 
 [data-theme="light"] {
@@ -59,9 +59,7 @@ body {
   color: var(--text-primary);
 }
 
-/* ============================================================
-   HEADER
-   ============================================================ */
+/* ===== HEADER ===== */
 .header-hero {
   background: var(--bg-gradient);
   padding: var(--padding-header);
@@ -78,13 +76,13 @@ body {
   align-items: center;
   width: 100%;
   max-width: var(--max-width-container);
-  margin-block-end: var(--margin-top-bar); /* logical property */
+  margin-block-end: var(--margin-top-bar);
 }
 
 .title {
   font-size: var(--font-size-title);
   font-weight: 700;
-  letter-spacing: 0.125rem; /* 2px → rem */
+  letter-spacing: 0.125rem;   /* 2px → rem */
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -92,7 +90,7 @@ body {
 
 .badge {
   font-size: var(--font-size-badge);
-  padding: 0.125rem 0.5rem; /* 2px 8px → rem */
+  padding: 0.125rem 0.5rem;   /* 2px 8px → rem */
   background: var(--accent-color);
   color: #000;
   border-radius: 20px;
@@ -112,9 +110,7 @@ body {
   font-size: 1rem;
 }
 
-/* ============================================================
-   SEARCH
-   ============================================================ */
+/* ===== SEARCH ===== */
 .search-container {
   display: flex;
   width: 100%;
@@ -123,7 +119,7 @@ body {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-radius: 1rem; /* 16px → rem */
+  border-radius: 1rem;
   overflow: hidden;
   box-shadow: var(--glass-shadow);
 }
@@ -153,9 +149,7 @@ body {
   color: #000;
 }
 
-/* ============================================================
-   INFO CARD (Glassmorphism)
-   ============================================================ */
+/* ===== INFO CARD ===== */
 .info-card {
   position: absolute;
   bottom: -4rem;
@@ -174,13 +168,11 @@ body {
 
 .info-item {
   padding: 0 var(--gap-info-item);
-  border-inline-end: 1px solid var(--glass-border); /* logical property */
+  border-inline-end: 1px solid var(--glass-border);
 }
-
 .info-item:first-child {
   padding-inline-start: 0;
 }
-
 .info-item:last-child {
   border-inline-end: none;
 }
@@ -190,7 +182,7 @@ body {
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.125rem; /* 2px → rem */
+  letter-spacing: 0.125rem;   /* 2px → rem */
   margin-block-end: 0.4rem;
 }
 
@@ -199,19 +191,17 @@ body {
   font-weight: 700;
   color: var(--text-secondary);
   line-height: 1.2;
-  overflow-wrap: break-word; /* pengganti word-break: break-word */
-  word-break: normal; /* fallback untuk browser lawas */
+  overflow-wrap: break-word;
+  word-break: normal;         /* fallback */
 }
 
-/* ============================================================
-   MAP
-   ============================================================ */
+/* ===== MAP ===== */
 .map-wrapper {
   flex: 1;
   width: 100%;
   position: relative;
   z-index: 1;
-  min-height: 28.125rem; /* 450px → rem */
+  min-height: 28.125rem;      /* 450px → rem */
 }
 
 #map {
@@ -220,9 +210,7 @@ body {
   min-height: 28.125rem;
 }
 
-/* ============================================================
-   MARKER PULSE ANIMATION
-   ============================================================ */
+/* ===== MARKER ===== */
 @keyframes markerPulse {
   0% {
     transform: scale(0.95);
@@ -247,9 +235,7 @@ body {
   animation: markerPulse 1.8s infinite;
 }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
+/* ===== FOOTER ===== */
 .attribution {
   text-align: center;
   padding: 1rem 0;
@@ -269,9 +255,7 @@ body {
   font-weight: 500;
 }
 
-/* ============================================================
-   PREFERS-REDUCED-MOTION (tanpa !important)
-   ============================================================ */
+/* ===== PREFERS-REDUCED-MOTION (tanpa !important) ===== */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms;
@@ -283,14 +267,11 @@ body {
   }
 }
 
-/* ============================================================
-   RESPONSIVE: Mobile-First
-   ============================================================ */
+/* ===== RESPONSIVE (Mobile-First) ===== */
 @media (max-width: 48em) {
   .header-hero {
     padding-bottom: 12rem;
   }
-
   .info-card {
     grid-template-columns: 1fr;
     text-align: center;
@@ -298,19 +279,16 @@ body {
     padding: 1.25rem;
     gap: 0.8rem;
   }
-
   .info-item {
     padding: 0;
     border-inline-end: none;
     border-bottom: 1px solid var(--glass-border);
     padding-block-end: 0.6rem;
   }
-
   .info-item:last-child {
     border-bottom: none;
     padding-block-end: 0;
   }
-
   .info-value {
     font-size: 1.1rem;
   }
